@@ -4,10 +4,20 @@ import {
   View
 } from 'react-native';
 
+import { useRouter } from 'expo-router';
+
 import Menu from '../components/menu';
 import Cards from '../components/cards';
 
 export default function HomepageU() {
+  const router = useRouter();
+
+
+  const handleLerQRCode = () => {
+    router.push('/readqrcode');
+  }
+
+
   return (
     <View style={{ alignItems: 'center', flexDirection: 'column' }}>
       <Menu />
@@ -19,7 +29,7 @@ export default function HomepageU() {
         alignItems: 'center',
         justifyContent: 'center',
         marginTop: 20
-      }} onPress={() => console.log('Ler QRCode')}>
+      }} onPress={handleLerQRCode}>
         <Text>Ler QRCode</Text>
       </Pressable>
     </View>

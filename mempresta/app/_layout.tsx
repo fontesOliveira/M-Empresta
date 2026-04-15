@@ -1,8 +1,12 @@
-import { Stack } from 'expo-router';
+import { Stack, Navigator } from 'expo-router';
 
 export default function RootLayout() {
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        animation: 'slide_from_right',
+      }}
+    >
       <Stack.Screen
         name="index"
         options={{ headerShown: false }}
@@ -13,6 +17,10 @@ export default function RootLayout() {
       />
       <Stack.Screen
         name="homepageg"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="readqrcode"
         options={{ headerShown: false }}
       />
 

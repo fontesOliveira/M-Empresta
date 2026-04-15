@@ -7,7 +7,7 @@ import {
   ScrollView
 } from 'react-native';
 
-import { Input } from '@/components/inputs';
+import  Input from '@/components/inputs';
 import Perfil from '@/components/perfil';
 import styles from './styles';
 
@@ -24,11 +24,9 @@ export default function LoginScreen() {
   const handleEnviar = () => {
     if ((nome === 'pedro') && senha === '123') {
       console.log('Login bem-sucedido!');
-      alert('Login bem-sucedido!');
       router.push('/homepageu');
     } else if ((nome === 'yan') && senha === '123') {
       console.log('Login bem-sucedido!');
-      alert('Login bem-sucedido!');
       router.push('/homepageg');
     } else {
       console.log('Credenciais inválidas. Tente novamente.');
@@ -63,7 +61,7 @@ export default function LoginScreen() {
             <View style={{ flexDirection: 'row', marginTop: 5 }}>
               <Text>
                 Esqueceu a senha? {' '}
-                <Link href="../app/web/index.html" style={{ color: '#b20fc8' }}>
+                <Link href="../" style={{ color: '#b20fc8' }}>
                   Recuperar Senha
                 </Link>
               </Text>
