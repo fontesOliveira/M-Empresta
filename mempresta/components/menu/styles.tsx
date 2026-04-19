@@ -16,5 +16,27 @@ export const styles = StyleSheet.create({
     titulo: {
         fontSize: 20,
         fontWeight: 'bold',
-    }
+    },
+    dropdown: {
+        position: "absolute",   // mantém fixo
+        left: -10,              // distância da esquerda
+        top: 50,                // distância abaixo do ícone
+        backgroundColor: "#eee",
+        borderRadius: 8,
+        padding: 10,
+        elevation: 5,           // sombra no Android
+        shadowColor: "#000",    // sombra no iOS
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        minWidth: 150,             // largura do menu
+        zIndex: 999, 
+    },
+    item: {
+        paddingVertical: 8,
+        height: 40,
+    },
+    itemText: {
+        fontSize: 20, // 👈 aumenta o tamanho da letra
+        fontWeight: "500",
+    },
 })

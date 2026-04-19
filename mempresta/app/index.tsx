@@ -22,16 +22,19 @@ export default function LoginScreen() {
   const router = useRouter();
 
   const handleEnviar = () => {
-    if ((nome === 'pedro') && senha === '123') {
+    if ((nome.toLowerCase() === 'pedro') && senha === '123') {
       console.log('Login bem-sucedido!');
       router.push('/homepageu');
-    } else if ((nome === 'yan') && senha === '123') {
+    } else if ((nome.toLowerCase() === 'yan') && senha === '123') {
       console.log('Login bem-sucedido!');
       router.push('/homepageg');
     } else {
       console.log('Credenciais inválidas. Tente novamente.');
       alert('Credenciais inválidas. Tente novamente.');
     }
+
+    setNome('');
+    setSenha('');
   }
 
   return (
@@ -43,8 +46,8 @@ export default function LoginScreen() {
 
         <View style={styles.container} >
           <Perfil width={250} height={250} />
-          <Input placeholder='Usuário' setfunction={setNome} />
-          <Input placeholder='Senha' setfunction={setSenha} />
+          <Input placeholder='Usuário' setfunction={setNome} value={nome} />
+          <Input placeholder='Senha' setfunction={setSenha} value={senha} />
           <Pressable style={styles.button} onPress={handleEnviar}>
             <Text style={styles.buttonText}>Entrar</Text>
           </Pressable>

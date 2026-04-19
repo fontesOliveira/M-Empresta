@@ -23,7 +23,10 @@ export default function RootLayout() {
         name="readqrcode"
         options={{ headerShown: false }}
       />
-
+      <Stack.Screen
+        name="history"
+        options={{ headerShown: false }}
+      />
     </Stack>
   );
 }
