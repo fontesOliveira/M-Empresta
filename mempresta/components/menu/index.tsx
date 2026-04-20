@@ -36,9 +36,9 @@ export default function Menu() {
             case 'Histórico':
                 router.push('./../../history');
                 break;
-            case 'Configurações':
-                router.push('./../../configuracoes');
-                break;
+            // case 'Configurações':
+            //     router.push('./../../configuracoes');
+            //     break;
             case 'Sair':
                 navigation.goBack();
                 break;
@@ -63,12 +63,12 @@ export default function Menu() {
                         <TouchableOpacity style={styles.item } onPress={() => handleMenuItemPress('Histórico')}>
                             <Text style={styles.itemText}>Histórico</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.item} onPress={() => handleMenuItemPress('Perfil')}>
+                        {/* <TouchableOpacity style={styles.item} onPress={() => handleMenuItemPress('Perfil')}>
                             <Text style={styles.itemText}>Perfil</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.item} onPress={() => handleMenuItemPress('Configurações')}>
                             <Text style={styles.itemText}>Configurações</Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                         <TouchableOpacity style={styles.item} onPress={() => handleMenuItemPress('Sair')}>
                             <Text style={styles.itemText}>Sair</Text>
                         </TouchableOpacity>

@@ -17,7 +17,13 @@ export default StyleSheet.create({
         padding: 10,
     },
     text: {
-        fontSize: 16,
+        fontSize: 19,
+        marginBottom: 5,
+        color: '#000',
+        fontWeight: 'bold'
+    },
+    texts: {
+        fontSize: 14,
         marginBottom: 5,
         color: '#000',
         fontWeight: 'bold'

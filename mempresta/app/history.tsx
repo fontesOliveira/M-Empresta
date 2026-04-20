@@ -12,10 +12,10 @@ export default function Historico() {
         <View style={styles.container}>
             <Text style={styles.title}>Histórico de Empréstimos</Text>
             <View style={styles.cards}>
-                <CardsHistory name="O Senhor dos Anéis" date="15/06/2023" />
-                <CardsHistory name="1984" date="20/07/2023" />
-                <CardsHistory name="O Pequeno Príncipe" date="05/08/2023" />
-                <CardsHistory name="Dom Quixote" date="10/09/2023" />
+                <CardsHistory name="O Senhor dos Anéis" emprestado="15/06/2023" devolvido="20/07/2023" />
+                <CardsHistory name="1984" emprestado="20/07/2023" devolvido="25/08/2023" />
+                <CardsHistory name="O Pequeno Príncipe" emprestado="05/08/2023" devolvido="10/09/2023" />
+                <CardsHistory name="Dom Quixote" emprestado="10/09/2023" devolvido="15/10/2023" />
             </View>
             <BackButton />
         </View>
