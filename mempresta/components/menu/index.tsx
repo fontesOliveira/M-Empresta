@@ -15,10 +15,10 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 
 import Perfil from '../perfil';
 import { styles } from './styles';
+import Authentication from '@/context/authentication';
 
 export default function Menu() {
     const router = useRouter();
-    const navigation = useNavigation();
 
     const [MenuOpen, setIsMenuOpen] = useState(false);
 
@@ -36,11 +36,10 @@ export default function Menu() {
             case 'Histórico':
                 router.push('./../../history');
                 break;
-            // case 'Configurações':
-            //     router.push('./../../configuracoes');
-            //     break;
             case 'Sair':
-                navigation.goBack();
+                const auth = new Authentication();
+                auth.logout();
+                router.replace('./../../login');
                 break;
         }
         setIsMenuOpen(false);
@@ -63,12 +62,6 @@ export default function Menu() {
                         <TouchableOpacity style={styles.item } onPress={() => handleMenuItemPress('Histórico')}>
                             <Text style={styles.itemText}>Histórico</Text>
                         </TouchableOpacity>
-                        {/* <TouchableOpacity style={styles.item} onPress={() => handleMenuItemPress('Perfil')}>
-                            <Text style={styles.itemText}>Perfil</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.item} onPress={() => handleMenuItemPress('Configurações')}>
-                            <Text style={styles.itemText}>Configurações</Text>
-                        </TouchableOpacity> */}
                         <TouchableOpacity style={styles.item} onPress={() => handleMenuItemPress('Sair')}>
                             <Text style={styles.itemText}>Sair</Text>
                         </TouchableOpacity>

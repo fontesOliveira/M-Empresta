@@ -1,4 +1,4 @@
-import { Stack, Navigator } from 'expo-router';
+import { Stack } from 'expo-router';
 
 export default function RootLayout() {
   return (
@@ -8,16 +8,21 @@ export default function RootLayout() {
       }}
     >
       <Stack.Screen
-        name="index"
+        name="login"
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name="homepageu"
-        options={{ headerShown: false }}
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
       />
       <Stack.Screen
         name="homepageg"
-        options={{ headerShown: false }}
+        options={{ headerShown: false,
+          gestureEnabled: false,
+         }}
       />
       <Stack.Screen
         name="readqrcode"
@@ -25,6 +30,10 @@ export default function RootLayout() {
       />
       <Stack.Screen
         name="history"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="record"
         options={{ headerShown: false }}
       />
     </Stack>

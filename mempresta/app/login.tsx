@@ -4,15 +4,16 @@ import {
   View,
   KeyboardAvoidingView,
   Platform,
-  ScrollView
+  ScrollView,
+  StyleSheet
 } from 'react-native';
 
 import  Input from '@/components/inputs';
 import Perfil from '@/components/perfil';
-import styles from './styles';
+import Authentication from '../context/authentication';
 
 
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 
 export default function LoginScreen() {
@@ -21,13 +22,16 @@ export default function LoginScreen() {
 
   const router = useRouter();
 
+  const auth = new Authentication();
+
   const handleEnviar = () => {
-    if ((nome.toLowerCase() === 'pedro') && senha === '123') {
+    if (auth.login(nome, senha)) {
       console.log('Login bem-sucedido!');
-      router.push('/homepageu');
-    } else if ((nome.toLowerCase() === 'yan') && senha === '123') {
-      console.log('Login bem-sucedido!');
-      router.push('/homepageg');
+      if (auth.getAccountType() === 'U') {
+        router.replace('/homepageu');
+      }else if (auth.getAccountType() === 'G') {
+        router.replace('/homepageg');
+      }
     } else {
       console.log('Credenciais inválidas. Tente novamente.');
       alert('Credenciais inválidas. Tente novamente.');
@@ -51,27 +55,31 @@ export default function LoginScreen() {
           <Pressable style={styles.button} onPress={handleEnviar}>
             <Text style={styles.buttonText}>Entrar</Text>
           </Pressable>
-
-          <View style={{ alignItems: 'center', justifyContent: 'center', marginTop: 20 }}>
-            <View style={{ flexDirection: 'row', marginTop: 5 }}>
-              <Text>
-                Não tem uma conta? {' '}
-                <Link href="/homepageu" style={{ color: '#b20fc8' }}>
-                  Cadastre-se
-                </Link>
-              </Text>
-            </View>
-            <View style={{ flexDirection: 'row', marginTop: 5 }}>
-              <Text>
-                Esqueceu a senha? {' '}
-                <Link href="../" style={{ color: '#b20fc8' }}>
-                  Recuperar Senha
-                </Link>
-              </Text>
-            </View>
-          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
+
+
+const styles = StyleSheet.create({container: {
+        width: "100%",
+        height: "100%",
+        backgroundColor: '#f8f8f8',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    button: {
+        backgroundColor: '#b20fc8',
+        width: 220,
+        height: 50,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 30,
+        marginTop: 5,
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 18,
+    },
+})

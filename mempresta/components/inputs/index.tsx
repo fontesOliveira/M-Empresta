@@ -1,6 +1,5 @@
 import {
     View,
-    Text,
     TextInput,
 } from 'react-native';
 
