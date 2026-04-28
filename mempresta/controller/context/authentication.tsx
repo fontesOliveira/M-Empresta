@@ -2,6 +2,8 @@ import UserSession from "./usersession";
 
 class Authentication {
 
+    private userName = "";
+
     login(username: string, password: string): boolean {
         if (username.toLowerCase() === 'pedro' && password === '123') {
             const userSession = UserSession.getInstance();
@@ -14,6 +16,8 @@ class Authentication {
             userSession.setConta('G');
             return true;
         }
+
+        this.setUserName(username);
 
         return false;
 
@@ -35,6 +39,14 @@ class Authentication {
     logout() {
         const userSession = UserSession.getInstance();
         userSession.reset();
+    }
+
+    setUserName(username: string) {
+        this.userName = username.toLowerCase();
+    }
+
+    getUserName(): string {
+        return this.userName;
     }
 }
 

@@ -33,6 +33,10 @@ export default function RootLayout() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
+        name="cadastrados"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
         name="record"
         options={{ headerShown: false }}
       />

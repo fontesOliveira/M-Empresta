@@ -1,5 +1,3 @@
-import { forwardRef } from 'react';
-
 import {
     View,
     Image

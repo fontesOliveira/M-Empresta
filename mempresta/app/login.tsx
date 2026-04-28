@@ -10,7 +10,7 @@ import {
 
 import  Input from '@/components/inputs';
 import Perfil from '@/components/perfil';
-import Authentication from '../context/authentication';
+import Authentication from '../controller/context/authentication';
 
 
 import { useRouter } from 'expo-router';

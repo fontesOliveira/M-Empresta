@@ -13,21 +13,15 @@ import BackButton from '@/components/backbutton';
 import { useState } from 'react';
 
 export default function Record() {
-  const [data, setData] = useState('');
+    const [nome, setNome] = useState('');
+    const [autor, setAutor] = useState('');
+    const [biblioteca, setBiblioteca] = useState('');
 
-  // Função que formata para dd/mm/aaaa
-  const handleDateChange = (text: string) => {
-    let cleaned = text.replace(/\D/g, "");
-    if (cleaned.length > 8) cleaned = cleaned.slice(0, 8);
-
-    let formatted = cleaned;
-    if (cleaned.length >= 5) {
-      formatted = cleaned.slice(0, 2) + "/" + cleaned.slice(2, 4) + "/" + cleaned.slice(4);
-    } else if (cleaned.length >= 3) {
-      formatted = cleaned.slice(0, 2) + "/" + cleaned.slice(2);
+  const handleInputCadastro = () => {
+    if (nome.trim() === '' || autor.trim() === '' || biblioteca.trim() === '') {
+      alert('Por favor, preencha todos os campos.');
+      return;
     }
-
-    setData(formatted);
   };
 
     return (
@@ -37,11 +31,10 @@ export default function Record() {
             <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.container}>
                     <Text style={styles.title}>Cadastro de item</Text>
-                    <InputRecord placeholder="Nome do item" setfunction={() => { }} maxLength={50} />
-                    <InputRecord placeholder="Autor" setfunction={() => { }} maxLength={50} />
-                    <InputRecord placeholder="Ano de publicação" setfunction={handleDateChange} inputType="number" maxLength={8} />
-                    <InputRecord placeholder="Biblioteca" setfunction={() => { }} maxLength={50} />
-                    <Pressable onPress={() => { }} style={{ marginTop: 20 }}>
+                    <InputRecord placeholder="Nome do item" setfunction={setNome} maxLength={100} />
+                    <InputRecord placeholder="Autor" setfunction={setAutor} maxLength={100} />
+                    <InputRecord placeholder="Biblioteca" setfunction={setBiblioteca} maxLength={9} />
+                    <Pressable onPress={handleInputCadastro} style={{ marginTop: 20 }}>
                         <View style={styles.button}>
                             <Text style={styles.textbutton}>Cadastrar</Text>
                         </View>
