@@ -5,13 +5,13 @@ class Authentication {
     private userName = "";
 
     login(username: string, password: string): boolean {
-        if (username.toLowerCase() === 'pedro' && password === '123') {
+        if (username.toLowerCase() === 'a06170571' && password === '123') {
             const userSession = UserSession.getInstance();
             userSession.setConta('U');
             return true;
         }
 
-        if (username.toLowerCase() === 'yan' && password === '123') {
+        if (username.toLowerCase() === 'a07152289' && password === '123') {
             const userSession = UserSession.getInstance();
             userSession.setConta('G');
             return true;
@@ -42,7 +42,7 @@ class Authentication {
     }
 
     setUserName(username: string) {
-        this.userName = username.toLowerCase();
+        this.userName = username.toLowerCase().substring(0, 8);
     }
 
     getUserName(): string {

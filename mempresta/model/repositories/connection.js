@@ -1,34 +1,53 @@
-const criarBanco = require('./banco');
-const item = require('./item');
-const historico = require('./historico');
+import Historico from "../database/hsitorico";
+import Item from "../database/item";
+import Autentication from "../../controller/context/authentication";
 
 class Connection {
-
-  // ---------- ITEM ----------
-  async inserirItem(nome, autor, biblioteca) {
-    return await item.inserirItem(nome, autor, biblioteca);
+  constructor() {
+    this.historico = new Historico(Autentication.getUserName());
+    this.item = new Item();
   }
 
-  async listarItens() {
-    return await item.listarItens();
+  comando = (Comando) => {
+    if (Comando.tabela === "H") {
+      switch (Comando.acao) {
+        case "inserir":
+          this.historico.inserir(Comando.emprestado, Comando.devolvido, Comando.idItem);
+          break;
+        case "atualizar":
+          this.historico.atualizar(Comando.codigo, Comando.devolvido);
+          break;
+        case "excluir":
+          this.historico.excluir(Comando.codigo);
+          break;
+        case "selecionar":
+          return this.historico.selecionar(Comando.codigo);
+          break;
+        case "listar":
+          return this.historico.listar();
+          break;
+      }
+    } else if (Comando.tabela === "I") {
+      switch (Comando.acao) {
+        case "inserir":
+          this.item.inserir(Comando.nome, Comando.autor, Comando.biblioteca);
+          break;
+        case "atualizar":
+          this.item.atualizar(Comando.codigo, Comando.nome, Comando.autor, Comando.biblioteca);
+          break;
+        case "excluir":
+          this.item.excluir(Comando.codigo);
+          break;
+        case "selecionar":
+          return this.item.selecionar(Comando.codigo);
+          break;
+        case "listar":
+          return this.item.listar();
+          break;
+      }
+    }
   }
 
-  async atualizarItem(codigo, nome, autor, biblioteca) {
-    return await item.atualizarItem(codigo, nome, autor, biblioteca);
-  }
-
-  // ---------- HISTORICO ----------
-  async inserirHistorico(emprestado, devolvido, idItem) {
-    return await historico.inserirHistorico(emprestado, devolvido, idItem);
-  }
-
-  async listarHistoricos() {
-    return await historico.listarHistoricos();
-  }
-
-  async atualizarHistorico(codigo, emprestado, devolvido) {
-    return await historico.atualizarHistorico( codigo, emprestado, devolvido);
-  }
 }
 
-module.exports = Connection;
+export default Connection;

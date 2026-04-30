@@ -1,44 +1,51 @@
-// historico.js
-const db = require('./banco');
+import { dbRun, dbGet } from "./banco";
 
-// Inserir novo histórico
-function inserirHistorico(emprestado, devolvido = null, idItem) {
-  return new Promise((resolve, reject) => {
-    const tabela = `historico${db.idUsers}`;
-    const sql = `INSERT INTO ${tabela} (Emprestado, Devolvido, idItem) VALUES (?, ?, ?)`;
-    db.run(sql, [emprestado, devolvido, idItem], function(err) {
-      if (err) reject(err);
-      else resolve({ id: this.lastID });
-    });
-  });
-}
+class Historico {
 
-// Listar históricos
-function listarHistoricos() {
-  return new Promise((resolve, reject) => {
-    const tabela = `historico${db.idUsers}`;
+  constructor(idUser) {
+    this.idUser = idUser;
+    this.criar();
+  }
+
+  criar() {
     const sql = `
-      SELECT h.Codigo, h.Emprestado, h.Devolvido, i.Nome AS ItemNome
-      FROM ${tabela} h
-      JOIN Item i ON h.idItem = i.Codigo
+      CREATE TABLE IF NOT EXISTS Historico${this.idUser} (
+        Codigo INTEGER PRIMARY KEY AUTOINCREMENT,
+        Emprestado DATETIME NOT NULL,
+        Devolvido DATETIME,
+        idItem INTEGER,
+        FOREIGN KEY (idItem) REFERENCES Item(Codigo)
+      )
     `;
-    db.all(sql, [], (err, rows) => {
-      if (err) reject(err);
-      else resolve(rows);
-    });
-  });
+    dbRun(sql);
+  }
+
+  inserir(emprestado, devolvido = null, idItem) {
+    const sql = `
+      INSERT INTO Historico${this.idUser} (Emprestado, Devolvido, idItem) VALUES ($emprestado, $devolvido, $idItem)
+    `;
+    dbRun(sql);
+  }
+
+  selecionar(codigo) {
+    const sql = `SELECT * FROM Historico${this.idUser} WHERE Codigo = $codigo`;
+    return dbGet(sql, { $codigo });
+  }
+
+  listar() {
+    const sql = `SELECT * FROM Historico${this.idUser}`;
+    return dbGet(sql);
+  }
+
+  excluir(codigo) {
+    const sql = `DELETE FROM Historico${this.idUser} WHERE Codigo = $codigo`;
+    dbRun(sql);
+  }
+
+  atualizar(codigo, devolvido){
+    const sql = `UPDATE Historico${this.idUser} SET Devolvido = $devolvido WHERE Codigo = $codigo`;
+    dbRun(sql);
+  }
 }
 
-// Atualizar histórico
-function atualizarHistorico( codigo, emprestado, devolvido = null) {
-  return new Promise((resolve, reject) => {
-    const tabela = `historico${db.idUsers}`;
-    const sql = `UPDATE ${tabela} SET Emprestado = ?, Devolvido = ? WHERE Codigo = ?`;
-    db.run(sql, [emprestado, devolvido, codigo], function(err) {
-      if (err) reject(err);
-      else resolve({ changes: this.changes });
-    });
-  });
-}
-
-module.exports = { inserirHistorico, listarHistoricos, atualizarHistorico };
+export default Historico;
