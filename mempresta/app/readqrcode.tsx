@@ -1,13 +1,12 @@
 import {
-    View,
-    Text,
-    Linking
+    View
 } from 'react-native';
 
 import BackButton from '@/components/backbutton';
 
+import { useRouter } from 'expo-router';
+
 import {
-    Camera,
     CameraView,
     useCameraPermissions,
 } from 'expo-camera';
@@ -15,11 +14,11 @@ import {
 import { useEffect, useState } from 'react';
 
 import { StyleSheet } from 'react-native';
-import { Link } from 'expo-router';
 
 export default function ReadQRCode() {
     const [permission, requestPermission] = useCameraPermissions();
     const [scanned, setScanned] = useState(false);
+    const router = useRouter();
 
     async function handleAllow() {
         await requestPermission();
@@ -31,14 +30,35 @@ export default function ReadQRCode() {
     }, []);
 
     const handleBarcodeScanned = ({ data }: { data: string }) => {
-        if (scanned) return;
+        var s = true;
+        if (!scanned) {
+            console.log("QR Code já escaneando: ", data);
+            setScanned(true);
+            s = false;
+            const parsedData = handleJSONParse(data);
+            if (parsedData) {
+                router.push('/homepageu');
+            }
+        } else {
+            if (!s) {
+                setScanned(false);
+                s = true;
+            }
+        } // falta construir o controller para pegar o json lido pelo qrcode e analisa-lo no model para efetuar as 
+        // operações disponiveis - com internet e sem internet - e depois redirecionar para a tela de homepageu 
+        // passando os dados do json para exibir as informações do usuário e as opções de ações disponiveis
+    }
 
-        setScanned(true);
-
-        console.log("QR Code escaneado: ", data);
-        Linking.openURL(data);
-
-        setScanned(false)
+    const handleJSONParse = (data: string) => {
+        try {
+            const parsedData = JSON.parse(data);
+            console.log("Dados JSON parseados: ", parsedData);
+            return parsedData;
+        } catch (error) {
+            console.error("Erro ao parsear JSON: ", error);
+            alert("O QR Code lido não contém um formato JSON válido. Por favor, tente novamente.");
+            return null;
+        }
     }
 
     const styles = StyleSheet.create({
