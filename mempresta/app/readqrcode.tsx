@@ -15,6 +15,10 @@ import { useEffect, useState } from 'react';
 
 import { StyleSheet } from 'react-native';
 
+import ControllerModel from '@/controller/controller_model/controllermodel';
+
+const controller = new ControllerModel();
+
 export default function ReadQRCode() {
     const [permission, requestPermission] = useCameraPermissions();
     const [scanned, setScanned] = useState(false);
@@ -37,6 +41,7 @@ export default function ReadQRCode() {
             s = false;
             const parsedData = handleJSONParse(data);
             if (parsedData) {
+                controller.analizandoQRCode(parsedData);
                 router.push('/homepageu');
             }
         } else {
