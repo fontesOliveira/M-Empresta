@@ -6,10 +6,15 @@ export const styles = StyleSheet.create({
         width: '80%',
         height: 400, 
         backgroundColor: '#dcd7d7',   
-        borderRadius: 10,
-        marginTop: 100,
-        marginBottom: 70,
+        borderRadius: 15,
+        marginTop: 50,
+        marginBottom: 50,
         alignItems: 'center',
+    },
+    textTitle: {
+        fontSize: 23,
+        marginBottom: 5,
+        fontWeight: 'bold',
     },
     text: {
         fontSize: 20,

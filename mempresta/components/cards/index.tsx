@@ -6,7 +6,14 @@ import {
 
 import { styles } from './styles';
 
-export default function Cards() {
+type CardsProps = {
+    name: string;
+    autor: string | null;
+    emprestado: string | null;
+    devolvido: string | null;
+}
+
+export default function Cards({ name, autor, emprestado, devolvido }: CardsProps) {
     return (
         <View style={styles.container}>
             <View>
@@ -14,9 +21,9 @@ export default function Cards() {
                     style={{ width: 250, height: 250, marginTop: 20, borderRadius: 10 }} />
             </View>
             <View style={{ marginTop: 20, marginLeft: -50 }}>
-                <Text style={styles.text}>Nome do Livro</Text>
-                <Text style={styles.text}>Autor do Livro</Text>
-                <Text style={styles.text}>Devolver até: dd/mm/aaaa</Text>
+                <Text style={styles.textTitle}>{name}</Text>
+                <Text style={styles.text}>{autor || 'Autor não especificado'}</Text>
+                <Text style={styles.text}>{devolvido || 'Devolver até: dd/mm/aaaa'}</Text>
             </View>
         </View>
     )

@@ -9,7 +9,10 @@ export default function RootLayout() {
     >
       <Stack.Screen
         name="login"
-        options={{ headerShown: false }}
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
       />
       <Stack.Screen
         name="homepageu"
@@ -20,9 +23,10 @@ export default function RootLayout() {
       />
       <Stack.Screen
         name="homepageg"
-        options={{ headerShown: false,
+        options={{
+          headerShown: false,
           gestureEnabled: false,
-         }}
+        }}
       />
       <Stack.Screen
         name="readqrcode"

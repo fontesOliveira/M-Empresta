@@ -14,10 +14,17 @@ export default StyleSheet.create({
     containercard:{
         justifyContent: 'center',
         left: 10,
-        padding: 10,
+        padding: 5,
     },
     text: {
-        fontSize: 19,
+        fontSize: 20,
+        marginBottom: 5,
+        color: '#000',
+        fontWeight: 'bold',
+        left: 3
+    },
+    textautor: {
+        fontSize: 17,
         marginBottom: 5,
         color: '#000',
         fontWeight: 'bold'
@@ -26,7 +33,8 @@ export default StyleSheet.create({
         fontSize: 14,
         marginBottom: 5,
         color: '#000',
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        left: 5
     },
     imagem: {
         width: 100,
