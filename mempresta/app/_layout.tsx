@@ -44,6 +44,10 @@ export default function RootLayout() {
         name="record"
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="perfilpage"
+        options={{headerShown: false}}
+        />
     </Stack>
   );
 }

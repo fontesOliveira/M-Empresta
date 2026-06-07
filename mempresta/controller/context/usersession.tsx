@@ -2,6 +2,7 @@ class UserSession {
     private static instance: UserSession;
 
     conta: {tipo: string} | null = null;
+    nome: {nome: string} | null = null;
 
     private constructor() {}
 
@@ -18,6 +19,15 @@ class UserSession {
         this.conta = {tipo: tipo};
     };
 
+    setNome(nome: string){
+        nome = nome.toUpperCase();
+        this.nome = {nome: nome};
+    }
+
+    getNome(){
+        return this.nome?.nome;
+    }
+
     getTipoDaConta() {
         return this.conta?.tipo || null;
     }
@@ -25,6 +35,7 @@ class UserSession {
     reset() {
         this.conta = null;
         console.log("Sessão encerrada");
+        UserSession.instance = undefined as any;
     }
 
 }

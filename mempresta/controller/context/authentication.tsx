@@ -1,44 +1,44 @@
 import UserSession from "./usersession";
+import ControllerModel from "../controller_model/controllermodel";
 
 class Authentication {
 
     private userName = "";
+    private controllerModel = new ControllerModel();
+    private userSession = UserSession.getInstance();
 
     login(username: string, password: string): boolean {
-        if (username.toLowerCase() === 'pedro' && password === '123') {
-            const userSession = UserSession.getInstance();
-            userSession.setConta('U');
+        const result = this.controllerModel.consultarUsuario(username, password);
+        if (result) {
+            this.userSession.setConta('U');
+            this.userSession.setNome(this.controllerModel.getNome())
+            // result[1] may be string | boolean | null; ensure we assign a string
             return true;
         }
 
         if (username.toLowerCase() === 'yan' && password === '123') {
-            const userSession = UserSession.getInstance();
-            userSession.setConta('G');
+            this.userSession.setConta('G');
             return true;
         }
 
         this.setUserName(username);
 
         return false;
-
     }
 
     isAuthenticated(): boolean {
-        const userSession = UserSession.getInstance();
-        return userSession.getTipoDaConta() !== null;
+        return this.userSession.getTipoDaConta() !== null;
     }
 
     getAccountType(): string | null {
         if (this.isAuthenticated()) {
-            const userSession = UserSession.getInstance();
-            return userSession.getTipoDaConta();
+            return this.userSession.getTipoDaConta();
         }
         return null;
     }
 
     logout() {
-        const userSession = UserSession.getInstance();
-        userSession.reset();
+        this.userSession.reset();
     }
 
     setUserName(username: string) {
