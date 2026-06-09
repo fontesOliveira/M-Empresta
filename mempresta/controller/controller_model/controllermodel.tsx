@@ -21,7 +21,7 @@ export default class ControllerModel { // fazer a analise do QRCode e chamar as 
 
             const r: boolean = manipularJSON.consultarUsuario(codigo, senha);
             this.nome = manipularJSON.pegarNomeUsuario(codigo, senha);
-            this.nome = codigo.charAt(0).toUpperCase();
+            this.nome = this.nome.toUpperCase();
             return r;
         } catch (error) {
             console.warn("Erro ao consultar usuário:", error);

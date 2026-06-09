@@ -82,7 +82,7 @@ export default function ReadQRCode() {
       console.log("Dados JSON parseados: ", parsedData);
       return parsedData;
     } catch (error) {
-      console.error("Erro ao parsear JSON: ", error);
+      console.warn("Erro ao parsear JSON: ", error);
       alert("O QR Code lido não contém um formato JSON válido. Por favor, tente novamente.");
       return null;
     }
@@ -114,6 +114,7 @@ export default function ReadQRCode() {
   try {
     // Renderiza a câmera apenas se a permissão foi concedida
     if (permission?.granted) {
+      console.log("Ler QRCode")
       return (
         <View style={styles.container}>
           <View style={styles.cameraWrapper}>

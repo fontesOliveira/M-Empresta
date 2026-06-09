@@ -54,6 +54,7 @@ export default function HomepageU() {
     }, [])
   );
 
+  console.log("Pagina principal")
   return (
     <View style={{ alignItems: 'center', flexDirection: 'column'}}>
       {/* Menu superior */}

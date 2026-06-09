@@ -18,6 +18,7 @@ export default function Historico() {
   const manipularJSON = new ManipularJSON();
   const dados = manipularJSON.lerJSON();
 
+  console.log("Histórico")
   return (
     <View style={styles.container}>
       {/* Título da tela */}
