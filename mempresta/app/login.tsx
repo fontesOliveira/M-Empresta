@@ -9,68 +9,51 @@ import {
   StyleSheet
 } from 'react-native';
 
+// Hooks do React
+import { useEffect, useState } from 'react';
+
 // Importação de componentes personalizados
 import Input from '@/components/inputs';
 import Perfil from '@/components/perfil';
 
-// Importação do controlador de autenticação
-import Authentication from '../controller/context/authentication';
-
-// Hooks do React e do Expo Router
+// Importação do hook de autenticação
+import { useAuthentication } from '../controller/context/authentication';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { Usuario } from '@/bancoDeDados/useDatabase';
 
 export default function LoginScreen() {
-  // Estados locais para armazenar usuário e senha digitados
-  const [nome, setNome] = useState('');
+  const [codigo, setCodigo] = useState('');
   const [senha, setSenha] = useState('');
-
-  // Hook para navegação entre telas
   const router = useRouter();
 
-  // Instância do controlador de autenticação
-  const auth = new Authentication();
+  // Hook de autenticação
+  const auth = useAuthentication();
 
-  // Função chamada ao clicar no botão "Entrar"
-  const handleEnviar = () => {
-    // Verifica se login é válido
-    if (auth.login(nome, senha)) {
+  const usuario: Usuario = { codigo, nome: "", senha };
+
+  const handleEnviar = async () => {
+    const ok = await auth.login(usuario);
+    if (ok) {
       console.log('Login bem-sucedido!');
-
-      // Redireciona para a homepage de acordo com o tipo de conta
-      if (auth.getAccountType() === 'U') {
+      if (auth.getAccountType() === 'A') {
         router.replace('/homepageu');
       } else if (auth.getAccountType() === 'G') {
         router.replace('/homepageg');
       }
     } else {
-      // Caso login falhe, exibe mensagem de erro
-      console.log('Credenciais inválidas. Tente novamente.');
       alert('Credenciais inválidas. Tente novamente.');
     }
-
-    // Limpa os campos após tentativa de login
-    setNome('');
+    setCodigo('');
     setSenha('');
   };
 
   return (
-    // Componente que ajusta a tela quando o teclado aparece
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      {/* ScrollView para permitir rolagem em telas menores */}
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.container}>
-          {/* Componente de perfil (imagem ou ícone) */}
           <Perfil width={250} height={250} />
-
-          {/* Campos de entrada para usuário e senha */}
-          <Input placeholder='Usuário' setfunction={setNome} value={nome} />
+          <Input placeholder='Usuário' setfunction={setCodigo} value={codigo} />
           <Input placeholder='Senha' setfunction={setSenha} value={senha} />
-
-          {/* Botão de login */}
           <Pressable style={styles.button} onPress={handleEnviar}>
             <Text style={styles.buttonText}>Entrar</Text>
           </Pressable>
@@ -79,6 +62,7 @@ export default function LoginScreen() {
     </KeyboardAvoidingView>
   );
 }
+
 
 // Estilos da tela
 const styles = StyleSheet.create({

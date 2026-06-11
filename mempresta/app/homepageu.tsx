@@ -1,7 +1,5 @@
 // Importações principais do React Native
 import {
-  Pressable,
-  Text,
   View,
   BackHandler,
   StyleSheet,

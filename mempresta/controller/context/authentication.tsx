@@ -1,53 +1,58 @@
 import UserSession from "./usersession";
-import ControllerModel from "../controller_model/controllermodel";
+import { useDatabaseService, Usuario } from "@/bancoDeDados/useDatabase";
 
-class Authentication {
+export function useAuthentication() {
+  const dbService = useDatabaseService();
+  const userSession = UserSession.getInstance();
+  let userName = "";
 
-    private userName = "";
-    private controllerModel = new ControllerModel();
-    private userSession = UserSession.getInstance();
+  async function login(usuario: Usuario): Promise<boolean> {
+    let u: Usuario = { codigo: "", nome: "", senha: "" };
 
-    login(username: string, password: string): boolean {
-        const result = this.controllerModel.consultarUsuario(username, password);
-        if (result) {
-            this.userSession.setConta('U');
-            this.userSession.setNome(this.controllerModel.getNome())
-            // result[1] may be string | boolean | null; ensure we assign a string
-            return true;
-        }
-
-        if (username.toLowerCase() === 'yan' && password === '123') {
-            this.userSession.setConta('G');
-            return true;
-        }
-
-        this.setUserName(username);
-
-        return false;
+    try {
+      await dbService.init(); // inicializa banco
+      u = await dbService.searchUsuario(usuario.codigo);
+      console.info("Usuario recebido:", u.codigo, u.nome);
+    } catch (error) {
+      console.log("Erro na busca do usuário:", error);
     }
 
-    isAuthenticated(): boolean {
-        return this.userSession.getTipoDaConta() !== null;
+    if (u.senha === usuario.senha) {
+      userSession.setConta(usuario.codigo.charAt(0).toUpperCase());
+      userSession.setNome(usuario.nome);
+      setUserName(usuario.nome);
+      return true;
+    } else {
+      return false;
     }
+  }
 
-    getAccountType(): string | null {
-        if (this.isAuthenticated()) {
-            return this.userSession.getTipoDaConta();
-        }
-        return null;
-    }
+  function isAuthenticated(): boolean {
+    return userSession.getTipoDaConta() !== null;
+  }
 
-    logout() {
-        this.userSession.reset();
-    }
+  function getAccountType(): string | null {
+    return isAuthenticated() ? userSession.getTipoDaConta() : null;
+  }
 
-    setUserName(username: string) {
-        this.userName = username.toLowerCase();
-    }
+  function logout() {
+    userSession.reset();
+  }
 
-    getUserName(): string {
-        return this.userName;
-    }
+  function setUserName(username: string) {
+    userName = username.toUpperCase();
+  }
+
+  function getUserName(): string {
+    return userName;
+  }
+
+  return {
+    login,
+    isAuthenticated,
+    getAccountType,
+    logout,
+    setUserName,
+    getUserName,
+  };
 }
-
-export default Authentication;

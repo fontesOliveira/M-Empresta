@@ -1,8 +1,10 @@
+
+
 class UserSession {
     private static instance: UserSession;
 
-    conta: {tipo: string} | null = null;
-    nome: {nome: string} | null = null;
+    private nome: string = "";
+    private conta: string = "";
 
     private constructor() {}
 
@@ -16,24 +18,24 @@ class UserSession {
 
     setConta(tipo: string) {
         tipo = tipo[0].toUpperCase();
-        this.conta = {tipo: tipo};
+        this.conta = tipo;
     };
 
     setNome(nome: string){
         nome = nome.toUpperCase();
-        this.nome = {nome: nome};
+        this.nome = nome;
     }
 
     getNome(){
-        return this.nome?.nome;
+        return this.nome;
     }
 
     getTipoDaConta() {
-        return this.conta?.tipo || null;
+        return this.conta || null;
     }
 
     reset() {
-        this.conta = null;
+        this.conta = "";
         console.log("Sessão encerrada");
         UserSession.instance = undefined as any;
     }
