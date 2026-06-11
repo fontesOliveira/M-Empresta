@@ -2,7 +2,8 @@ import {
   Pressable,
   Text,
   View,
-  BackHandler
+  BackHandler,
+  Button
 } from 'react-native';
 
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -36,10 +37,10 @@ export default function HomepageG() {
   );
 
   return (
-    <View style={{ alignItems: 'center', flexDirection: 'column' }}>
+    <View style={{ alignItems: 'center', flexDirection: 'column', flex: 1 }}>
       <Menu />
-      <Cards />
-      <Pressable
+      {/* <Cards /> */}
+      {/* <Pressable
         style={{
           width: "100%",
           height: 250,
@@ -51,7 +52,10 @@ export default function HomepageG() {
         onPress={handleCadastroItem}
       >
         <Text>Cadastro de Item</Text>
-      </Pressable>
+      </Pressable> */}
+      <Button title='Novo Usuário'></Button>
+      <Button title='Novo Item'></Button>
+      <Button title='Cadastrados'></Button>
     </View>
   );
 }

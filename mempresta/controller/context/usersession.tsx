@@ -4,6 +4,7 @@ class UserSession {
     private static instance: UserSession;
 
     private nome: string = "";
+    private codigo: string = "";
     private conta: string = "";
 
     private constructor() {}

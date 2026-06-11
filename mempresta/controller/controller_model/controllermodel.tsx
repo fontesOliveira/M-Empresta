@@ -37,6 +37,8 @@ export default class ControllerModel { // fazer a analise do QRCode e chamar as 
         return this.letra;
     }
 
-    analizandoQRCode() {}
+    analizandoQRCode(data: JSON) {
+        console.log("Analisando o QRCode no controller: ", data);
+    }
 
 }

@@ -57,9 +57,11 @@ export default function ReadQRCode() {
 
       if (parsedData) {
         // Analisa os dados via controller
-        controller.analizandoQRCode();
+        controller.analizandoQRCode(parsedData);
 
         // Redireciona para homepage do usuário
+        router.push('/homepageu');
+      }else {
         router.push('/homepageu');
       }
     } else {
@@ -78,7 +80,7 @@ export default function ReadQRCode() {
   // Função para validar e converter string em JSON
   const handleJSONParse = (data: string) => {
     try {
-      const parsedData = JSON.parse(data);
+      const parsedData: JSON = JSON.parse(data);
       console.log("Dados JSON parseados: ", parsedData);
       return parsedData;
     } catch (error) {

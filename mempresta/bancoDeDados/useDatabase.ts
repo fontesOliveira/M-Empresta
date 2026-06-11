@@ -48,7 +48,11 @@ export function useDatabaseService() {
         INSERT OR IGNORE INTO itens (codigo, nome, autor, codigoQRCode, codigoBiblioteca) VALUES
         ('LIV00000001', 'Dom Casmurro', 'Machado de Assis', 'QRC00000001', 'B00000001'),
         ('LIV00000002', 'Memórias Póstumas de Brás Cubas', 'Machado de Assis', 'QRC00000002', 'B00000001'),
-        ('LIV00000003', 'O Primo Basílio', 'Eça de Queirós', 'QRC00000003', 'B00000001');
+        ('LIV00000003', 'O Primo Basílio', 'Eça de Queirós', 'QRC00000003', 'B00000001'),
+        ('LIV00000004', 'O Senhor dos Anéis', 'J. R. R. Tolkien', 'QRC00000004', 'B00000001'),
+        ('LIV00000005', 'O Hobbit', 'J. R. R. Tolkien', 'QRC00000005', 'B00000001'),
+        ('LIV00000006', 'Orgulho e Preconceito', 'Jane Austen', 'QRC00000006', 'B00000001'),
+        ('LIV00000007', 'Crime e Castigo', 'Fiódor Dostoiévski', 'QRC00000007', 'B00000001');
       `);
       console.log("Inserção inicial concluída.");
     } catch (error) {

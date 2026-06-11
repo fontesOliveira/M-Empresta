@@ -4,7 +4,7 @@ import { useDatabaseService, Usuario } from "@/bancoDeDados/useDatabase";
 export function useAuthentication() {
   const dbService = useDatabaseService();
   const userSession = UserSession.getInstance();
-  let userName = "";
+  var userName: string = "";
 
   async function login(usuario: Usuario): Promise<boolean> {
     let u: Usuario = { codigo: "", nome: "", senha: "" };
@@ -19,7 +19,7 @@ export function useAuthentication() {
 
     if (u.senha === usuario.senha) {
       userSession.setConta(usuario.codigo.charAt(0).toUpperCase());
-      userSession.setNome(usuario.nome);
+      userSession.setNome(u.nome);
       setUserName(usuario.nome);
       return true;
     } else {
