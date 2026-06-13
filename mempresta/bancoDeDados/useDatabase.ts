@@ -21,10 +21,16 @@ export type Item = {
 
 export type Emprestimo = {
   codigo: string;
-  emprestado: string; // formato ISO: "YYYY-MM-DD HH:MM:SS"
-  devolvido?: string;
+  emprestado: string; // formato ISO: "DD-MM-YYYY HH-MM-SS"
+  devolvido?: string | null;
   codigoItem: string;
   codigoUsuario: string;
+};
+
+// Novo tipo para retorno combinado
+export type EmprestimoComItem = Emprestimo & {
+  nomeLivro: string;
+  autorLivro: string;
 };
 
 // Hook customizado
@@ -53,7 +59,9 @@ export function useDatabaseService() {
         ('LIV00000005', 'O Hobbit', 'J. R. R. Tolkien', 'QRC00000005', 'B00000001'),
         ('LIV00000006', 'Orgulho e Preconceito', 'Jane Austen', 'QRC00000006', 'B00000001'),
         ('LIV00000007', 'Crime e Castigo', 'Fiódor Dostoiévski', 'QRC00000007', 'B00000001');
-      `);
+
+        `);
+      // DELETE FROM emprestimos;
       console.log("Inserção inicial concluída.");
     } catch (error) {
       console.log("Erro na inserção inicial:", error);
@@ -215,12 +223,61 @@ export function useDatabaseService() {
     }
   }
 
-  async function searchEmprestimo(codigoUsuario: string) {
+  async function searchEmprestimo(codigoUsuario: string): Promise<Emprestimo[]> {
     return await db.getAllAsync<Emprestimo>(
       "SELECT * FROM emprestimos WHERE codigoUsuario = ?",
       [codigoUsuario]
     );
   }
+
+  async function searchEmprestimosComItens(codigoUsuario: string): Promise<EmprestimoComItem[]> {
+    return await db.getAllAsync<EmprestimoComItem>(
+      `
+    SELECT e.codigo, e.emprestado, e.devolvido, e.codigoItem, e.codigoUsuario,
+           i.nome AS nomeLivro, i.autor AS autorLivro
+    FROM emprestimos e
+    JOIN itens i ON e.codigoItem = i.codigo
+    WHERE e.codigoUsuario = ?
+    ORDER BY e.emprestado DESC
+    `,
+      [codigoUsuario]
+    );
+  }
+
+  async function devolverEmprestimo(codigo: string) {
+    const devolucao = getDataHoraAtual();
+    const stmt = await db.prepareAsync(
+      "UPDATE emprestimos SET devolvido = $devolvido WHERE codigo = $codigo"
+    );
+    try {
+      await stmt.executeAsync({
+        $codigo: codigo,
+        $devolvido: devolucao,
+      });
+    } finally {
+      await stmt.finalizeAsync();
+    }
+  }
+
+
+  function getDataHoraAtual(): string {
+    const agora = new Date();
+    const dataHoraLocal = agora.toLocaleString("pt-BR", {
+      timeZone: "America/Sao_Paulo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+
+    const [data, hora] = dataHoraLocal.split(" ");
+    const [dia, mes, ano] = data.split("/");
+
+    return `${dia}-${mes}-${ano} ${hora.replace(/:/g, "-")}`;
+  }
+
 
   return {
     init,
@@ -236,5 +293,8 @@ export function useDatabaseService() {
     createEmprestimo,
     updateEmprestimo,
     searchEmprestimo,
+    searchEmprestimosComItens,
+    devolverEmprestimo, // novo método
   };
+
 }

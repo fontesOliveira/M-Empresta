@@ -1,116 +1,110 @@
-// Importações principais do React Native
 import {
   View,
-  BackHandler,
   StyleSheet,
   FlatList,
   Dimensions,
-} from 'react-native';
+  Text,
+  DeviceEventEmitter,
+} from "react-native";
 
-// Hooks do Expo Router e React
-import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback } from 'react';
+import { useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 
-// Componentes personalizados
-import Menu from '../components/menu';
-import Cards from '../components/cards';
+import Menu from "../components/menu";
+import Cards from "../components/cards";
 
-// Manipulação de dados JSON
-import ManipularJSON from "@/model/manipularjson";
+import { useDatabaseService } from "@/bancoDeDados/useDatabase";
 
-// Pega a largura da tela para ajustar os cards
 const { width } = Dimensions.get("window");
 
 export default function HomepageU() {
-  // Instância para manipular dados
-  const manipularJSON = new ManipularJSON();
-  const dados = manipularJSON.lerJSON();
+  const dbService = useDatabaseService();
+  const [naoDevolvidos, setNaoDevolvidos] = useState<any[]>([]);
 
-  // Filtra apenas os livros que ainda não foram devolvidos
-  const naoDevolvidos = dados.exemplo.filter((item: any) => item.devolvido === null);
+  async function carregar() {
+    const dados = await dbService.searchEmprestimosComItens("A06170571");
+    const filtrados = dados
+      .filter((item) => item.devolvido == null)
+      .map((item) => ({
+        ...item,
+        emprestado: item.emprestado?.replaceAll(/-/g, "/") ?? null
+      }));
+    setNaoDevolvidos(filtrados);
 
-  // Hook de navegação
-  const router = useRouter();
+  }
 
-  // Função para navegar até a tela de leitura de QRCode
-  const handleLerQRCode = () => {
-    router.push('/readqrcode');
-  };
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener("emprestimoAtualizado", () => {
+      carregar();
+    });
+    return () => sub.remove();
+  }, []);
 
-  // Bloqueia o botão físico de "voltar" no Android
   useFocusEffect(
     useCallback(() => {
-      const onBackPress = () => true; // retorna true para impedir ação padrão
-
-      const subscription = BackHandler.addEventListener(
-        'hardwareBackPress',
-        onBackPress
-      );
-
-      // Remove o listener quando a tela perde o foco
-      return () => subscription.remove();
+      carregar();
     }, [])
   );
 
-  console.log("Pagina principal")
   return (
-    <View style={{ alignItems: 'center', flexDirection: 'column'}}>
-      {/* Menu superior */}
+    <View style={{ alignItems: "center", flexDirection: "column", flex: 1 }}>
       <Menu />
 
-      {/* Lista de cards com livros não devolvidos */}
       <View style={styles.cards}>
-        <FlatList
-          data={naoDevolvidos}
-          keyExtractor={(item, index) => index.toString()}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <View style={{ width, alignItems: "center", flex: 0.2 }}>
-              <Cards
-                name={item.name}
-                autor={item.autor}
-                emprestado={item.emprestado}
-                devolvido={item.devolvido}
-              />
-            </View>
-          )}
-        />
+        {naoDevolvidos.length > 0 ? (
+          <FlatList
+            data={naoDevolvidos}
+            keyExtractor={(item) => item.codigo}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <View style={{ width, alignItems: "center", flex: 0.2 }}>
+                <Cards
+                  name={item.nomeLivro}   // vem do JOIN
+                  autor={item.autorLivro} // vem do JOIN
+                  emprestado={item.emprestado}
+                  devolvido={item.devolvido}
+                />
+              </View>
+            )}
+          />
+        ) : (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyTitle}>Você não possui empréstimos ativos.</Text>
+            <Text style={styles.emptySubtitle}>
+              Quando você pegar livros emprestados, eles aparecerão aqui.
+            </Text>
+          </View>
+        )}
       </View>
-
-      {/* Botão para leitura de QRCode (atualmente comentado) */}
-      {/* <Pressable
-        style={styles.qrButton}
-        onPress={handleLerQRCode}
-      >
-        <Text style={styles.title}>Ler QRCode</Text>
-      </Pressable> */}
     </View>
   );
 }
 
-// Estilos da tela
 const styles = StyleSheet.create({
   cards: {
-    height: "85%",
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 30,
   },
-  title: {
-    fontSize: 30,
-    fontWeight: "bold",
-    marginVertical: 20,
-    marginTop: -50,
+  emptyContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 20,
+    marginTop: -55,
   },
-  qrButton: {
-    width: "100%",
-    height: 250,
-    backgroundColor: '#0fc865',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-    borderRadius: 20,
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  emptySubtitle: {
+    fontSize: 16,
+    color: "#555",
+    textAlign: "center",
   },
 });

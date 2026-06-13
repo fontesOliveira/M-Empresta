@@ -22,6 +22,10 @@ class UserSession {
         this.conta = tipo;
     };
 
+    setCodigo(codigo: string){
+        this.codigo = codigo;
+    }
+
     setNome(nome: string){
         nome = nome.toUpperCase();
         this.nome = nome;
@@ -33,6 +37,10 @@ class UserSession {
 
     getTipoDaConta() {
         return this.conta || null;
+    }
+
+    getCodigo(){
+        return this.codigo;
     }
 
     reset() {

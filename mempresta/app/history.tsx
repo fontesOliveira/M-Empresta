@@ -1,24 +1,48 @@
-// Importações principais do React Native
 import {
   View,
   Text,
   StyleSheet,
-  FlatList
-} from 'react-native';
+  FlatList,
+} from "react-native";
 
-// Componentes personalizados
-import BackButton from '@/components/backbutton';
-import CardsHistory from '@/components/cardsHistory';
+import BackButton from "@/components/backbutton";
+import CardsHistory from "@/components/cardsHistory";
 
-// Manipulação de dados JSON
-import ManipularJSON from "@/model/manipularjson";
+import { useManipularJSON } from "@/controller/controller_model/useManipularJSON";
+import { Emprestimo, useDatabaseService } from "@/bancoDeDados/useDatabase";
+import { useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback } from "react";
 
 export default function Historico() {
-  // Instância para manipular dados
-  const manipularJSON = new ManipularJSON();
-  const dados = manipularJSON.lerJSON();
+  const { lerJSON } = useManipularJSON();
+  const [emprestimos, setEmprestimos] = useState<any[]>([]);
+  const dbService = useDatabaseService();
 
-  console.log("Histórico")
+  // Carrega os dados ao montar
+  useEffect(() => {
+    async function carregar() {
+      const dados = await dbService.searchEmprestimosComItens("A06170571");
+      setEmprestimos(dados.map((item) => ({
+        ...item,
+        emprestado: item.emprestado?.substring(0, 10).replaceAll(/-/g, "/") ?? null,
+        devolvido: item.devolvido?.substring(0, 10).replaceAll(/-/g, "/") ?? null,
+      })));
+    }
+    carregar();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      async function carregar() {
+        const dados = await dbService.searchEmprestimosComItens("A06170571");
+        setEmprestimos(dados);
+      }
+      carregar();
+    }, [])
+  );
+
+
   return (
     <View style={styles.container}>
       {/* Título da tela */}
@@ -26,18 +50,24 @@ export default function Historico() {
 
       {/* Lista de cards com histórico de empréstimos */}
       <View style={styles.cards}>
-        <FlatList
-          data={dados.exemplo} // dados vindos do JSON
-          keyExtractor={(item, index) => index.toString()} // chave única por índice
-          renderItem={({ item }) => (
-            <CardsHistory
-              name={item.name}
-              autor={item.autor}
-              emprestado={item.emprestado}
-              devolvido={item.devolvido}
-            />
-          )}
-        />
+        {emprestimos.length > 0 ? (
+          <FlatList
+            data={emprestimos}
+            keyExtractor={(item) => item.codigo}
+            renderItem={({ item }) => (
+              <CardsHistory
+                name={item.nomeLivro}
+                autor={item.autorLivro}
+                emprestado={item.emprestado}
+                devolvido={item.devolvido}
+              />
+            )}
+          />
+        ) : (
+          <Text style={{ textAlign: "center", marginTop: 20 }}>
+            Nenhum empréstimo encontrado.
+          </Text>
+        )}
       </View>
 
       {/* Botão de voltar */}
@@ -46,24 +76,23 @@ export default function Historico() {
   );
 }
 
-// Estilos da tela
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
   title: {
     fontSize: 30,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 30,
     marginTop: 100,
-    textAlign: 'center',
+    textAlign: "center",
   },
   cards: {
-    width: '95%',
-    height: '66%',
-    alignItems: 'center',
-    alignSelf: 'center',
-    justifyContent: 'center',
+    width: "95%",
+    height: "66%",
+    alignItems: "center",
+    alignSelf: "center",
+    justifyContent: "center",
     borderRadius: 20,
     paddingTop: 20,
     marginTop: 10,

@@ -20,6 +20,7 @@ export function useAuthentication() {
     if (u.senha === usuario.senha) {
       userSession.setConta(usuario.codigo.charAt(0).toUpperCase());
       userSession.setNome(u.nome);
+      userSession.setCodigo(u.codigo)
       setUserName(usuario.nome);
       return true;
     } else {
