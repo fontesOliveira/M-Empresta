@@ -3,7 +3,9 @@ import {
   Text,
   View,
   BackHandler,
-  Button
+  Button,
+  TouchableOpacity,
+  StyleSheet
 } from 'react-native';
 
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -17,6 +19,14 @@ export default function HomepageG() {
 
   const handleCadastroItem = () => {
     router.push('/record');
+  };
+
+  const handleCadastroUsuário = () => {
+    router.push('/cadastroUsuario');
+  };
+
+  const handleCadastrados = () => {
+    router.push('/cadastrados');
   };
 
   useFocusEffect(
@@ -53,9 +63,45 @@ export default function HomepageG() {
       >
         <Text>Cadastro de Item</Text>
       </Pressable> */}
-      <Button title='Novo Usuário'></Button>
-      <Button title='Novo Item'></Button>
-      <Button title='Cadastrados'></Button>
+      <View style={styles.container}>
+      <TouchableOpacity style={styles.button} onPress={handleCadastroUsuário}>
+        <Text style={styles.text}>Novo Usuário</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.button} onPress={handleCadastroItem}>
+        <Text style={styles.text}>Novo Item</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.button} onPress={handleCadastrados}>
+        <Text style={styles.text}>Cadastrados</Text>
+      </TouchableOpacity>
+    </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 20
+  },
+  button: {
+    backgroundColor: '#4CAF50', // verde
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginVertical: 8,
+    elevation: 3, // sombra no Android
+    width: 300,
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  text: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+});

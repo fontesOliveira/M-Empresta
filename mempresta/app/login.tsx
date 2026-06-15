@@ -20,11 +20,14 @@ import Perfil from '@/components/perfil';
 import { useAuthentication } from '../controller/context/authentication';
 import { useRouter } from 'expo-router';
 import { Usuario } from '@/bancoDeDados/useDatabase';
+import { useFuncoesSupabase } from '@/controller/controller_model/funcoesSupabase';
 
 export default function LoginScreen() {
   const [codigo, setCodigo] = useState('');
   const [senha, setSenha] = useState('');
   const router = useRouter();
+  const fs = useFuncoesSupabase();
+  fs.syncBibliotecas();
 
   // Hook de autenticação
   const auth = useAuthentication();

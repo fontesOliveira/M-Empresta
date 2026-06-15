@@ -13,10 +13,12 @@ import BackButton from '@/components/backbutton';
 export default function Perfilpage() {
     const u = UserSession.getInstance();
 
+    let c = u.getTipoDaConta() === "G" ? "GESTOR" : "USUÁRIO";
+
     return (
         <View style={styles.container} >
             <Perfil width={250} height={250} />
-            <Text style={styles.title}>Usuário: {u.getNome()}</Text>
+            <Text style={styles.title}>{c}: {u.getNome()}</Text>
             <BackButton></BackButton>
         </View>
     );

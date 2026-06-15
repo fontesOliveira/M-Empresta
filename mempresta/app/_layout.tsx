@@ -53,6 +53,10 @@ export default function RootLayout() {
           name="perfilpage"
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="cadastroUsuario"
+          options={{ headerShown: false }}
+        />
       </Stack>
     </SQLiteProvider>
   );

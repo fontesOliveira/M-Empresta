@@ -1,25 +1,23 @@
 import { supabase } from '@/controller/context/servidor.js'
 import { Biblioteca, Item } from '@/bancoDeDados/useDatabase'
-// IMPORTAÇÃO CORRIGIDA: Agora importa uma função executável, não um componente
 import { baixarQRCode } from './qrcodeGenerator.js'
+import { useSQLiteContext } from "expo-sqlite";
 
-export function funcoesSupabase() {
+export function useFuncoesSupabase() {
+    const db = useSQLiteContext(); // ✅ agora é válido dentro de um hook customizado
 
+    // ---------- BIBLIOTECAS ----------
     async function getBibliotecas(): Promise<Biblioteca[]> {
         return getBibliotecasSupabase();
     }
 
     async function getBibliotecasSupabase(): Promise<Biblioteca[]> {
         try {
-            const { data, error } = await supabase
-                .from("bibliotecas")
-                .select("*");
-
+            const { data, error } = await supabase.from("bibliotecas").select("*");
             if (error) {
                 console.error("Erro ao buscar bibliotecas:", error.message);
                 return [];
             }
-
             return data as Biblioteca[];
         } catch (err) {
             console.error("Erro inesperado:", err);
@@ -27,6 +25,46 @@ export function funcoesSupabase() {
         }
     }
 
+    // 🔄 Sincronizar bibliotecas Supabase → Local
+    async function syncBibliotecas(): Promise<boolean> {
+        try {
+            const { data, error } = await supabase.from("bibliotecas").select("*");
+            if (error) {
+                console.error("Erro ao buscar bibliotecas no Supabase:", error.message);
+                return false;
+            }
+            if (!data || data.length === 0) {
+                console.warn("Nenhuma biblioteca encontrada no Supabase.");
+                return false;
+            }
+
+            // Limpa tabela local
+            await db.execAsync("DELETE FROM bibliotecas;");
+
+            // Insere todas as bibliotecas no banco local (com OR REPLACE para evitar UNIQUE constraint)
+            for (const b of data as Biblioteca[]) {
+                const stmt = await db.prepareAsync(
+                    "INSERT OR REPLACE INTO bibliotecas (codigo, nome) VALUES ($codigo, $nome)"
+                );
+                try {
+                    await stmt.executeAsync({
+                        $codigo: b.codigo,
+                        $nome: b.nome,
+                    });
+                } finally {
+                    await stmt.finalizeAsync();
+                }
+            }
+
+            console.log("Bibliotecas sincronizadas com sucesso!");
+            return true;
+        } catch (err) {
+            console.error("Erro inesperado ao sincronizar bibliotecas:", err);
+            return false;
+        }
+    }
+
+    // ---------- ITENS ----------
     async function getUltimoItem(): Promise<Item | null> {
         const { data, error } = await supabase
             .from("itens")
@@ -38,71 +76,47 @@ export function funcoesSupabase() {
             console.error("Erro ao buscar último item:", error);
             return null;
         }
-
         if (!data || data.length === 0) {
             return null;
         }
 
-        const novoItem: Item = {
-            codigo: data[0].codigo,
+        return {
+            codigo: Number(data[0].codigo),
             nome: data[0].nome,
             autor: data[0].autor,
             codigoQRCode: data[0].codigoQRCode ?? undefined,
-            codigoBiblioteca: data[0].codigoBiblioteca,
+            codigoBiblioteca: Number(data[0].codigoBiblioteca),
         };
-
-        return novoItem;
     }
 
-    async function gerarNovoCodigoItem(ultimoItem: Item | null): Promise<string> {
-        if (!ultimoItem) {
-            return "LIV00000001";
-        }
-
-        const codigoAntigo = ultimoItem.codigo;
-        const prefixo = codigoAntigo.substring(0, 3);
-        const numeroStr = codigoAntigo.substring(3);
-
-        const numero = parseInt(numeroStr, 10);
-        const novoNumero = numero + 1;
-
-        const novoNumeroStr = novoNumero.toString().padStart(numeroStr.length, "0");
-        const novoCodigo = prefixo + novoNumeroStr;
-
-        return novoCodigo;
+    async function gerarNovoCodigoItem(ultimoItem: Item | null): Promise<number> {
+        return ultimoItem ? ultimoItem.codigo + 1 : 1;
     }
 
     async function gerarNovoCodigoQRCode(ultimoItem: Item | null): Promise<string> {
         if (!ultimoItem || !ultimoItem.codigoQRCode) {
             return "QRC00000001";
         }
-
         const codigoAntigo = ultimoItem.codigoQRCode;
         const prefixo = codigoAntigo.substring(0, 3);
         const numeroStr = codigoAntigo.substring(3);
-
         const numero = parseInt(numeroStr, 10);
         const novoNumero = numero + 1;
-
         const novoNumeroStr = novoNumero.toString().padStart(numeroStr.length, "0");
-        const novoCodigoQRCode = prefixo + novoNumeroStr;
-
-        return novoCodigoQRCode;
+        return prefixo + novoNumeroStr;
     }
 
-    async function getNovoCodigoItemEQRCode(): Promise<[string, string]> {
+    async function getNovoCodigoItemEQRCode(): Promise<[number, string]> {
         const ultimoItem = await getUltimoItem();
-
         const novoCodigo = await gerarNovoCodigoItem(ultimoItem);
         const novoQRCode = await gerarNovoCodigoQRCode(ultimoItem);
-
         return [novoCodigo, novoQRCode];
     }
 
     async function verificarLivroExistente(
         nome: string,
         autor: string,
-        codigoBiblioteca: string
+        codigoBiblioteca: number
     ): Promise<boolean> {
         const { data, error } = await supabase
             .from("itens")
@@ -116,14 +130,13 @@ export function funcoesSupabase() {
             console.error("Erro ao verificar livro existente:", error);
             return false;
         }
-
         return data !== null && data.length > 0;
     }
 
     async function cadastrarNovoItem(
         nome: string,
         autor: string,
-        codigoBiblioteca: string
+        codigoBiblioteca: number
     ): Promise<boolean> {
         try {
             const existe = await verificarLivroExistente(nome, autor, codigoBiblioteca);
@@ -133,7 +146,6 @@ export function funcoesSupabase() {
             }
 
             const [novoCodigo, novoCodigoQRCode] = await getNovoCodigoItemEQRCode();
-
             const novoItem: Item = {
                 codigo: novoCodigo,
                 nome,
@@ -143,15 +155,12 @@ export function funcoesSupabase() {
             };
 
             const { error } = await supabase.from("itens").insert([novoItem]);
-
             if (error) {
                 console.log("Erro ao inserir item:", error);
                 return false;
             }
 
-            // AJUSTE: Dispara a função geradora passando o objeto de forma correta e assíncrona
             await gerarQRCode(novoItem);
-
             console.log("Item cadastrado com sucesso:", novoItem);
             return true;
         } catch (err) {
@@ -160,41 +169,33 @@ export function funcoesSupabase() {
         }
     }
 
-    // AJUSTE: Chama diretamente a função utilitária do arquivo sem tags do React
     async function gerarQRCode(item: Item) {
         await baixarQRCode(item);
     }
 
     async function buscarItemEspecifico(itemMarcado: Item): Promise<Item | null> {
         try {
-            // Busca na tabela "itens" onde o código E o código da biblioteca batem com o item recebido
             const { data, error } = await supabase
                 .from("itens")
                 .select("*")
                 .eq("codigo", itemMarcado.codigo)
-                .maybeSingle(); // O .single() garante que traga apenas 1 objeto direto, em vez de uma lista []
+                .maybeSingle();
 
             if (error) {
                 console.log("Erro ao buscar o item específico:", error.message);
                 return null;
             }
-
-            // Se não encontrar nenhum dado correspondente
             if (!data) {
                 return null;
             }
 
-            // Transforma o retorno do banco para o tipo estruturado 'Item' do seu app
-            const livroAchado: Item = {
-                codigo: data.codigo,
+            return {
+                codigo: Number(data.codigo),
                 nome: data.nome,
                 autor: data.autor,
                 codigoQRCode: data.codigoQRCode ?? undefined,
-                codigoBiblioteca: data.codigoBiblioteca,
+                codigoBiblioteca: Number(data.codigoBiblioteca),
             };
-
-            return livroAchado;
-
         } catch (err) {
             console.error("Erro inesperado ao buscar item:", err);
             return null;
@@ -206,5 +207,6 @@ export function funcoesSupabase() {
         cadastrarNovoItem,
         gerarQRCode,
         buscarItemEspecifico,
-    }
+        syncBibliotecas,
+    };
 }

@@ -8,40 +8,48 @@ import {
 import BackButton from "@/components/backbutton";
 import CardsHistory from "@/components/cardsHistory";
 
-import { useManipularJSON } from "@/controller/controller_model/useManipularJSON";
 import { Emprestimo, useDatabaseService } from "@/bancoDeDados/useDatabase";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useFocusEffect } from "expo-router";
-import { useCallback } from "react";
+import UserSession from "@/controller/context/usersession";
 
 export default function Historico() {
-  const { lerJSON } = useManipularJSON();
+  const user = UserSession.getInstance(); // pega a sessão atual
+  const codigoUsuario = user.getCodigo(); // código do usuário logado
   const [emprestimos, setEmprestimos] = useState<any[]>([]);
   const dbService = useDatabaseService();
 
   // Carrega os dados ao montar
   useEffect(() => {
     async function carregar() {
-      const dados = await dbService.searchEmprestimosComItens("A06170571");
-      setEmprestimos(dados.map((item) => ({
-        ...item,
-        emprestado: item.emprestado?.substring(0, 10).replaceAll(/-/g, "/") ?? null,
-        devolvido: item.devolvido?.substring(0, 10).replaceAll(/-/g, "/") ?? null,
-      })));
+      const dados = await dbService.searchEmprestimosComItens(codigoUsuario);
+      setEmprestimos(
+        dados.map((item) => ({
+          ...item,
+          emprestado: item.emprestado?.substring(0, 10).replaceAll(/-/g, "/") ?? null,
+          devolvido: item.devolvido?.substring(0, 10).replaceAll(/-/g, "/") ?? null,
+        }))
+      );
     }
     carregar();
-  }, []);
+  }, [codigoUsuario]);
 
+  // Recarrega ao voltar para a tela
   useFocusEffect(
     useCallback(() => {
       async function carregar() {
-        const dados = await dbService.searchEmprestimosComItens("A06170571");
-        setEmprestimos(dados);
+        const dados = await dbService.searchEmprestimosComItens(codigoUsuario);
+        setEmprestimos(
+          dados.map((item) => ({
+            ...item,
+            emprestado: item.emprestado?.substring(0, 10).replaceAll(/-/g, "/") ?? null,
+            devolvido: item.devolvido?.substring(0, 10).replaceAll(/-/g, "/") ?? null,
+          }))
+        );
       }
       carregar();
-    }, [])
+    }, [codigoUsuario])
   );
-
 
   return (
     <View style={styles.container}>
@@ -53,7 +61,7 @@ export default function Historico() {
         {emprestimos.length > 0 ? (
           <FlatList
             data={emprestimos}
-            keyExtractor={(item) => item.codigo}
+            keyExtractor={(item) => item.codigo.toString()} // precisa ser string
             renderItem={({ item }) => (
               <CardsHistory
                 name={item.nomeLivro}

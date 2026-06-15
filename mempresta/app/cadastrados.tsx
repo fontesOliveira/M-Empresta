@@ -15,14 +15,14 @@ import { useDatabaseService } from '@/bancoDeDados/useDatabase';
 import { Item } from '@/bancoDeDados/useDatabase';
 
 export default function Historico() {
-  const { searchItem } = useDatabaseService();
+  const { searchAllItems } = useDatabaseService();
   const [livros, setLivros] = useState<Item[]>([]);
 
   // Carregar todos os livros ao montar a tela
   useEffect(() => {
     async function carregarLivros() {
       try {
-        const resultado = await searchItem(""); // busca todos
+        const resultado = await searchAllItems(); // busca todos
         setLivros(resultado);
       } catch (error) {
         console.log("Erro ao buscar livros:", error);
@@ -40,7 +40,7 @@ export default function Historico() {
       <View style={styles.cards}>
         <FlatList
           data={livros}
-          keyExtractor={(item) => item.codigo}
+          keyExtractor={(item) => item.codigo.toString()} // ✅ agora retorna string
           renderItem={({ item }) => (
             <CardsHistory
               name={item.nome}
@@ -50,6 +50,18 @@ export default function Historico() {
             />
           )}
         />
+        {/* <FlatList
+          data={livros}
+          keyExtractor={(item) => item.codigo}
+          renderItem={({ item }) => (
+            <CardsHistory
+              name={item.nome}
+              autor={item.autor}
+              emprestado={null}   // se não houver empréstimo, pode deixar vazio
+              devolvido={null}
+            />
+          )}
+        /> */}
       </View>
 
       {/* Botão de voltar */}

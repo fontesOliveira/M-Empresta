@@ -1,30 +1,31 @@
 import { useSQLiteContext } from "expo-sqlite";
 
+// ---------- TIPOS ----------
 export type Usuario = {
-  codigo: string;
+  codigo: string; // VARCHAR(9)
   nome: string;
   senha: string;
 };
 
 export type Biblioteca = {
-  codigo: string;
+  codigo: number; // INT
   nome: string;
 };
 
 export type Item = {
-  codigo: string;
+  codigo: number; // INT
   nome: string;
   autor: string;
   codigoQRCode?: string;
-  codigoBiblioteca: string;
+  codigoBiblioteca: number; // INT
 };
 
 export type Emprestimo = {
-  codigo: string;
-  emprestado: string; // formato ISO: "DD-MM-YYYY HH-MM-SS"
-  devolvido?: string | null;
-  codigoItem: string;
-  codigoUsuario: string;
+  codigo: number; // INT
+  emprestado: string; // TIMESTAMP em formato ISO
+  devolvido?: string | null; // TIMESTAMP ou null
+  codigoItem: number; // INT
+  codigoUsuario: string; // VARCHAR(9)
 };
 
 // Novo tipo para retorno combinado
@@ -33,40 +34,25 @@ export type EmprestimoComItem = Emprestimo & {
   autorLivro: string;
 };
 
-// Hook customizado
+// ---------- HOOK ----------
 export function useDatabaseService() {
   const db = useSQLiteContext();
 
-  async function init() {
+  // Dentro do useDatabaseService
+  async function clearAllTables() {
     try {
       await db.execAsync(`
-        INSERT OR IGNORE INTO usuarios (codigo, nome, senha) VALUES
-        ('A06170571', 'Pedro Henrique de Oliveira Fontes', '123'),
-        ('A06170152', 'Yan Moreira Lourenço', '123'),
-        ('G06170571', 'Pedro Henrique de Oliveira Fontes', '123'),
-        ('G06170152', 'Yan Moreira Lourenço', '123');
-
-        INSERT OR IGNORE INTO bibliotecas (codigo, nome) VALUES
-        ('B00000001', 'Biblioteca do Unileste - Fabriciano'),
-        ('B00000002', 'Biblioteca do Unileste - Ipatinga'),
-        ('B00000003', 'Biblioteca Municipal de Timóteo');
-
-        INSERT OR IGNORE INTO itens (codigo, nome, autor, codigoQRCode, codigoBiblioteca) VALUES
-        ('LIV00000001', 'Dom Casmurro', 'Machado de Assis', 'QRC00000001', 'B00000001'),
-        ('LIV00000002', 'Memórias Póstumas de Brás Cubas', 'Machado de Assis', 'QRC00000002', 'B00000001'),
-        ('LIV00000003', 'O Primo Basílio', 'Eça de Queirós', 'QRC00000003', 'B00000001'),
-        ('LIV00000004', 'O Senhor dos Anéis', 'J. R. R. Tolkien', 'QRC00000004', 'B00000001'),
-        ('LIV00000005', 'O Hobbit', 'J. R. R. Tolkien', 'QRC00000005', 'B00000001'),
-        ('LIV00000006', 'Orgulho e Preconceito', 'Jane Austen', 'QRC00000006', 'B00000001'),
-        ('LIV00000007', 'Crime e Castigo', 'Fiódor Dostoiévski', 'QRC00000007', 'B00000001');
-
-        `);
-      // DELETE FROM emprestimos;
-      console.log("Inserção inicial concluída.");
+      DELETE FROM emprestimos;
+      DELETE FROM itens;
+      DELETE FROM bibliotecas;
+      DELETE FROM usuarios;
+    `);
+      console.log("Todas as tabelas foram limpas com sucesso!");
     } catch (error) {
-      console.log("Erro na inserção inicial:", error);
+      console.error("Erro ao limpar tabelas:", error);
     }
   }
+
 
   // ---------- USUÁRIOS ----------
   async function createUsuario(data: Usuario) {
@@ -139,7 +125,7 @@ export function useDatabaseService() {
     }
   }
 
-  async function searchBiblioteca(codigo: string) {
+  async function searchBiblioteca(codigo: number) {
     return await db.getAllAsync<Biblioteca>(
       "SELECT * FROM bibliotecas WHERE codigo LIKE ?",
       [`%${codigo}%`]
@@ -181,12 +167,17 @@ export function useDatabaseService() {
     }
   }
 
-  async function searchItem(codigo: string) {
+  async function searchItem(codigo: number) {
     return await db.getAllAsync<Item>(
-      "SELECT * FROM itens WHERE codigo LIKE ?",
-      [`%${codigo}%`]
+      "SELECT * FROM itens WHERE codigo = ?",
+      [codigo]
     );
   }
+
+  async function searchAllItems() {
+  return await db.getAllAsync<Item>("SELECT * FROM itens");
+}
+
 
   // ---------- EMPRÉSTIMOS ----------
   async function createEmprestimo(data: Emprestimo) {
@@ -244,7 +235,7 @@ export function useDatabaseService() {
     );
   }
 
-  async function devolverEmprestimo(codigo: string) {
+  async function devolverEmprestimo(codigo: number) {
     const devolucao = getDataHoraAtual();
     const stmt = await db.prepareAsync(
       "UPDATE emprestimos SET devolvido = $devolvido WHERE codigo = $codigo"
@@ -259,28 +250,21 @@ export function useDatabaseService() {
     }
   }
 
-
+  // ---------- UTIL ----------
   function getDataHoraAtual(): string {
     const agora = new Date();
-    const dataHoraLocal = agora.toLocaleString("pt-BR", {
-      timeZone: "America/Sao_Paulo",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
+    const ano = agora.getFullYear();
+    const mes = String(agora.getMonth() + 1).padStart(2, "0");
+    const dia = String(agora.getDate()).padStart(2, "0");
+    const hora = String(agora.getHours()).padStart(2, "0");
+    const minuto = String(agora.getMinutes()).padStart(2, "0");
+    const segundo = String(agora.getSeconds()).padStart(2, "0");
 
-    const [data, hora] = dataHoraLocal.split(" ");
-    const [dia, mes, ano] = data.split("/");
-
-    return `${dia}-${mes}-${ano} ${hora.replace(/:/g, "-")}`;
+    // Formato ISO compatível com TIMESTAMP: YYYY-MM-DD HH:MM:SS
+    return `${ano}-${mes}-${dia} ${hora}:${minuto}:${segundo}`;
   }
 
-
   return {
-    init,
     createUsuario,
     updateUsuario,
     searchUsuario,
@@ -294,7 +278,8 @@ export function useDatabaseService() {
     updateEmprestimo,
     searchEmprestimo,
     searchEmprestimosComItens,
-    devolverEmprestimo, // novo método
+    devolverEmprestimo,
+    clearAllTables,
+    searchAllItems,
   };
-
 }

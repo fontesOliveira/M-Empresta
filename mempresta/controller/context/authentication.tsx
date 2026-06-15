@@ -16,7 +16,10 @@ export function useAuthentication() {
   async function loginAuto(usuario: Usuario): Promise<boolean> {
     try {
       const online = await isOnline();
-  
+
+
+      // dbService.clearAllTables();
+      
       if (online) {
         console.log("Conectado à internet, usando Supabase...");
         return await loginSupabase(usuario);
@@ -34,7 +37,6 @@ export function useAuthentication() {
     let u: Usuario = { codigo: "", nome: "", senha: "" };
 
     try {
-      await dbService.init(); // inicializa banco
       u = await dbService.searchUsuario(usuario.codigo);
       console.info("Usuario recebido:", u.codigo, u.nome);
     } catch (error) {

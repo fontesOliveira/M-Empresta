@@ -13,12 +13,12 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import BackButton from '@/components/backbutton';
 import { useState, useEffect } from 'react';
 import { Biblioteca } from "@/bancoDeDados/useDatabase";
-import { funcoesSupabase } from "@/controller/controller_model/funcoesSupabase";
+import { useFuncoesSupabase } from "@/controller/controller_model/funcoesSupabase";
 import { useRouter } from 'expo-router';
 
 export default function Record() {
   const router = useRouter();
-  const funcoesSupa = funcoesSupabase();
+  const funcoesSupa = useFuncoesSupabase();
   const [nome, setNome] = useState('');
   const [autor, setAutor] = useState('');
   const [bibliotecaTexto, setBibliotecaTexto] = useState('');
