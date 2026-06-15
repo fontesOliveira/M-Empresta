@@ -32,7 +32,11 @@ export default function LoginScreen() {
   const usuario: Usuario = { codigo, nome: "", senha };
 
   const handleEnviar = async () => {
-    const ok = await auth.login(usuario);
+    const ok = await auth.loginAuto(usuario);
+
+    setCodigo('');
+    setSenha('');
+    
     if (ok) {
       console.log('Login bem-sucedido!');
       if (auth.getAccountType() === 'A') {
@@ -43,8 +47,6 @@ export default function LoginScreen() {
     } else {
       alert('Credenciais inválidas. Tente novamente.');
     }
-    setCodigo('');
-    setSenha('');
   };
 
   return (

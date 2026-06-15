@@ -1,50 +1,9 @@
-// import ManipularJSON from '@/model/manipularjson';
-
-// const manipularJSON = new ManipularJSON();
-
-// export default class ControllerModel { // fazer a analise do QRCode e chamar as funções de consulta e comparação, ou adição, ou atualização
-
-//     nome: string = "";
-//     letra: string = "";
-
-//     constructor() {
-
-//     }
-
-//     consultarUsuario(codigo: string, senha: string) {
-//         try {
-//             const tamanho = codigo.length === 9;
-//             if (!tamanho) {
-//                 console.warn("Usuário inválido.");
-//                 throw new Error();
-//             }
-
-//             const r: boolean = manipularJSON.consultarUsuario(codigo, senha);
-//             this.nome = manipularJSON.pegarNomeUsuario(codigo, senha);
-//             this.nome = this.nome.toUpperCase();
-//             return r;
-//         } catch (error) {
-//             console.warn("Erro ao consultar usuário:", error);
-//             return false;
-//         }
-//     }
-
-//     getNome(){
-//         return this.nome;
-//     }
-
-//     getLetra(){
-//         return this.letra;
-//     }
-
-//     analizandoQRCode(data: JSON) {
-//         console.log("Analisando o QRCode no controller: ", data);
-//     }
-
-import { useDatabaseService, Emprestimo } from "@/bancoDeDados/useDatabase";
+import { useDatabaseService, Emprestimo, Item } from "@/bancoDeDados/useDatabase";
 import { DeviceEventEmitter } from "react-native";
 import UserSession from "../context/usersession";
 import { Alert } from "react-native";
+import { funcoesSupabase } from "./funcoesSupabase";
+import { supabase } from "../context/servidor";
 
 // Função utilitária para gerar data/hora no formato certo
 function getDataHoraAtual(): string {
@@ -68,25 +27,54 @@ function getDataHoraAtual(): string {
 export function useControllerModel() {
   const dbService = useDatabaseService();
   const user = UserSession.getInstance();
+  const funcaosupa = funcoesSupabase();
 
   async function analizandoQRCode(data: any) {
     try {
       const codigoItem = data?.codigo;
       const codigoUsuario = user.getCodigo();
+      
+      // Criamos uma variável que guardará o livro final, vindo de onde vier
+      let livroValido: Item | null = null;
 
       if (!codigoItem || !codigoUsuario) {
         Alert.alert("QR Code inválido", "Dados incompletos no QR Code.");
         return;
       }
 
-      // 1. Verifica se o item existe
+      // 1. Verifica se o item existe no banco local
       const itens = await dbService.searchItem(codigoItem);
-      if (!itens || itens.length === 0) {
-        Alert.alert("Livro não cadastrado", "Livro não cadastrado no seu banco de dados ainda.");
-        return;
+      
+      if (itens && itens.length > 0) {
+        // Se achou localmente, usamos ele
+        livroValido = itens[0];
+      } else {
+        // Se não achou localmente, tenta buscar no Supabase
+        try {
+          const itemSupabase = await funcaosupa.buscarItemEspecifico(data);
+
+          // Se o Supabase também não retornar nada
+          if (!itemSupabase) {
+            Alert.alert("Livro não cadastrado", "Livro não cadastrado no seu banco de dados ainda.");
+            return;
+          }
+
+          // Se o seu Supabase retornar um array, pegamos a primeira posição. 
+          // Se retornar o objeto direto, usamos ele próprio.
+          livroValido = Array.isArray(itemSupabase) ? itemSupabase[0] : itemSupabase;
+
+        } catch (error) {
+          console.error("Erro ao buscar no Supabase:", error);
+          Alert.alert("Erro", "Não foi possível verificar o livro no servidor remoto.");
+          return;
+        }
       }
 
-      const livro = itens[0];
+      // Segurança Extra: Garante que temos um livro válido antes de prosseguir
+      if (!livroValido) {
+        Alert.alert("Erro", "Não foi possível processar os dados deste livro.");
+        return;
+      }
 
       // 2. Verifica se já há empréstimo ativo
       const emprestimos = await dbService.searchEmprestimo(codigoUsuario);
@@ -95,10 +83,10 @@ export function useControllerModel() {
       );
 
       if (emprestimoAtivo) {
-        // Se já está ativo, pergunta se deseja devolver
+        // Se já está ativo, pergunta se deseja devolver (Usando agora livroValido)
         Alert.alert(
           "Livro já emprestado",
-          `Você já possui "${livro.nome}" emprestado. Deseja devolver agora?`,
+          `Você já possui "${livroValido.nome}" emprestado. Deseja devolver agora?`,
           [
             { text: "Cancelar", style: "cancel" },
             {
@@ -119,10 +107,10 @@ export function useControllerModel() {
         return;
       }
 
-      // 3. Caso não esteja ativo, pergunta se deseja emprestar
+      // 3. Caso não esteja ativo, pergunta se deseja emprestar (Usando agora livroValido)
       Alert.alert(
         "Livro disponível",
-        `Livro não encontrado nos empréstimos ativos. Gostaria de pegar "${livro.nome}" emprestado?`,
+        `Livro não encontrado nos empréstimos ativos. Gostaria de pegar "${livroValido.nome}" emprestado?`,
         [
           { text: "Cancelar", style: "cancel" },
           {
@@ -144,8 +132,8 @@ export function useControllerModel() {
         ]
       );
     } catch (error) {
-      console.error("Erro ao analisar QRCode:", error);
       Alert.alert("Erro", "Não foi possível processar o QR Code.");
+      console.error("Erro ao analisar QRCode:", error);
     }
   }
 

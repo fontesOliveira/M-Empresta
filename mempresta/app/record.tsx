@@ -1,91 +1,167 @@
-// Importações principais do React Native
 import {
   View,
   StyleSheet,
   Pressable,
   Text,
-  KeyboardAvoidingView,
-  ScrollView,
-  Platform
+  Platform,
+  TextInput,
+  TouchableOpacity
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
-// Componentes personalizados
-import InputRecord from '@/components/inputsRecord';
 import BackButton from '@/components/backbutton';
-
-// Hook do React para estados locais
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Biblioteca } from "@/bancoDeDados/useDatabase";
+import { funcoesSupabase } from "@/controller/controller_model/funcoesSupabase";
+import { useRouter } from 'expo-router';
 
 export default function Record() {
-  // Estados para armazenar os valores dos campos
+  const router = useRouter();
+  const funcoesSupa = funcoesSupabase();
   const [nome, setNome] = useState('');
   const [autor, setAutor] = useState('');
-  const [biblioteca, setBiblioteca] = useState('');
+  const [bibliotecaTexto, setBibliotecaTexto] = useState('');
+  const [bibliotecaSelecionada, setBibliotecaSelecionada] = useState<Biblioteca | null>(null);
+  const [bibliotecas, setBibliotecas] = useState<Biblioteca[]>([]);
+  const [filtered, setFiltered] = useState<Biblioteca[]>([]);
 
-  // Função chamada ao clicar em "Cadastrar"
-  const handleInputCadastro = () => {
-    // Validação simples: todos os campos devem estar preenchidos
-    if (nome.trim() === '' || autor.trim() === '' || biblioteca.trim() === '') {
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await funcoesSupa.getBibliotecas();
+      setBibliotecas(data);
+    };
+    fetchData();
+  }, []);
+
+  const handleInputCadastro = async () => {
+    if (nome.trim() === '' || autor.trim() === '' || !bibliotecaSelecionada) {
       alert('Por favor, preencha todos os campos.');
       return;
     }
 
-    // TODO: Implementar lógica de cadastro (salvar em JSON, enviar para backend, etc.)
-    console.log("Item cadastrado:", { nome, autor, biblioteca });
+    console.log("Item cadastrado 'handleInputCadastro':", { 
+      nome, 
+      autor, 
+      biblioteca: bibliotecaSelecionada // aqui vai o objeto completo
+    });
 
-    // Limpa os campos após cadastro
+    const resposta = await funcoesSupa.cadastrarNovoItem(nome, autor, bibliotecaSelecionada.codigo);
+
+    if(resposta){
+      console.info("Livro cadastrado com sucesso --- Resposta final");
+    }else{
+      console.info("Livro não cadastrado --- Respota final");
+    }
+
     setNome('');
     setAutor('');
-    setBiblioteca('');
+    setBibliotecaTexto('');
+    setBibliotecaSelecionada(null);
+    router.navigate('/homepageg')
+  };
+
+  const handleBibliotecaChange = (text: string) => {
+    setBibliotecaTexto(text);
+    setBibliotecaSelecionada(null); // limpa seleção se o usuário digitar manualmente
+
+    if (text.length > 0) {
+      const results = bibliotecas
+        .filter(b => b.nome.toLowerCase().includes(text.toLowerCase()))
+        .slice(0, 3); // mostra no máximo 3 opções
+      setFiltered(results);
+    } else {
+      setFiltered([]);
+    }
   };
 
   return (
-    // Ajusta a tela quando o teclado aparece
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.container}>
-          {/* Título da tela */}
-          <Text style={styles.title}>Cadastro de item</Text>
+    <View style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1, paddingTop: 150 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <Text style={styles.title}>Cadastro de item</Text>
+        <KeyboardAwareScrollView
+          contentContainerStyle={styles.container}
+          enableOnAndroid={true}
+          extraScrollHeight={100}
+          keyboardShouldPersistTaps="handled"
+        >
+          <TextInput
+            style={styles.input}
+            placeholder="Nome do item"
+            value={nome}
+            onChangeText={setNome}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Autor"
+            value={autor}
+            onChangeText={setAutor}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Biblioteca"
+            value={bibliotecaTexto}
+            onChangeText={handleBibliotecaChange}
+          />
 
-          {/* Campos de entrada */}
-          <InputRecord placeholder="Nome do item" setfunction={setNome} value={nome} maxLength={100} />
-          <InputRecord placeholder="Autor" setfunction={setAutor} value={autor} maxLength={100} />
-          <InputRecord placeholder="Biblioteca" setfunction={setBiblioteca} value={biblioteca} maxLength={9} />
+          {filtered.length > 0 && (
+            <View style={styles.suggestionsContainer}>
+              {filtered.map((item) => (
+                <TouchableOpacity
+                  key={item.codigo}
+                  style={styles.suggestionItem}
+                  onPress={() => {
+                    setBibliotecaSelecionada(item);   // guarda objeto completo
+                    setBibliotecaTexto(item.nome);    // mostra só o nome no input
+                    setFiltered([]);
+                  }}
+                >
+                  <Text style={styles.suggestionText}>{item.nome}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
 
-          {/* Botão de cadastro */}
           <Pressable onPress={handleInputCadastro} style={{ marginTop: 20 }}>
             <View style={styles.button}>
               <Text style={styles.textbutton}>Cadastrar</Text>
             </View>
           </Pressable>
-        </View>
-
-        {/* Botão de voltar */}
-        <BackButton />
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
+      </KeyboardAvoidingView>
+      <BackButton />
+    </View>
   );
 }
 
-// Estilos da tela
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingTop: 30,
+    paddingBottom: 10,
   },
   title: {
     fontSize: 35,
     fontWeight: 'bold',
-    marginBottom: 70,
+    marginBottom: 40,
+    alignSelf: 'center'
+  },
+  input: {
+    width: 300,
+    height: 50,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginBottom: 15,
+    fontSize: 16,
   },
   button: {
     backgroundColor: '#2e2e2e',
     paddingVertical: 10,
-    paddingHorizontal: 20,
     borderRadius: 5,
     width: 300,
     height: 50,
@@ -95,5 +171,20 @@ const styles = StyleSheet.create({
   textbutton: {
     color: '#fff',
     fontSize: 23,
+  },
+  suggestionsContainer: {
+    maxHeight: 150,
+    width: 300,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    marginBottom: 15,
+  },
+  suggestionItem: {
+    padding: 10,
+  },
+  suggestionText: {
+    fontSize: 16,
   },
 });
